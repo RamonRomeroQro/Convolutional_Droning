@@ -1,3 +1,12 @@
+venv
+./venv
+./hands
+hands
+./mytest
+mytest
+./vscode
+vscode
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
