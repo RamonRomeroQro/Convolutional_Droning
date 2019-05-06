@@ -5,8 +5,8 @@ venv
 hands
 ./mytest
 mytest
-./vscode
-vscode
+./.vscode
+.vscode
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
