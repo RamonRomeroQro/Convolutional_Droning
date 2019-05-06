@@ -1,15 +1,6 @@
-# USAGE
-# python train_vgg.py --dataset animals --model output/smallvggnet.model --label-bin output/smallvggnet_lb.pickle --plot output/smallvggnet_plot.png
 
-
-
-# set the matplotlib backend so figures can be saved in the background
 import matplotlib
-
-matplotlib.use("Agg")
-
-# import the necessary packages
-from CNN.smallvggnet import SmallVGGNet
+from CNN.ModelCNN import ModelCNN
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
@@ -36,8 +27,6 @@ ap.add_argument(
 ap.add_argument("-p", "--plot", required=True, help="path to output accuracy/loss plot")
 args = vars(ap.parse_args())
 
-# initialize the data and labels
-print("[INFO] loading images...")
 data = []
 labels = []
 
@@ -49,7 +38,7 @@ random.shuffle(imagePaths)
 # loop over the input images
 for imagePath in imagePaths:
     # load the image, resize it to 64x64 pixels (the required input
-    # spatial dimensions of SmallVGGNet), and store the image in the
+    # spatial dimensions of ModelCNN), and store the image in the
     # data list
     image = cv2.imread(imagePath)
     image = cv2.resize(image, (64, 64))
@@ -60,25 +49,18 @@ for imagePath in imagePaths:
     label = imagePath.split(os.path.sep)[-2]
     labels.append(label)
 
-# scale the raw pixel intensities to the range [0, 1]
 data = np.array(data, dtype="float") / 255.0
 labels = np.array(labels)
 
-# partition the data into training and testing splits using 75% of
-# the data for training and the remaining 25% for testing
 (trainX, testX, trainY, testY) = train_test_split(
-    data, labels, test_size=0.25, random_state=42
+    data, labels, test_size=0.20, random_state=42
 )
 
-# convert the labels from integers to vectors (for 2-class, binary
-# classification you should use Keras' to_categorical function
-# instead as the scikit-learn's LabelBinarizer will not return a
-# vector)
+
 lb = LabelBinarizer()
 trainY = lb.fit_transform(trainY)
 testY = lb.transform(testY)
 
-# construct the image generator for data augmentation
 aug = ImageDataGenerator(
     rotation_range=30,
     width_shift_range=0.1,
@@ -89,8 +71,7 @@ aug = ImageDataGenerator(
     fill_mode="nearest",
 )
 
-# initialize our VGG-like Convolutional Neural Network
-model = SmallVGGNet.build(width=64, height=64, depth=3, classes=len(lb.classes_))
+model = ModelCNN.build(width=64, height=64, depth=3, classes=len(lb.classes_))
 
 # initialize our initial learning rate, # of epochs to train for,
 # and batch size
@@ -98,9 +79,7 @@ INIT_LR = 0.01
 EPOCHS = 40
 BS = 30
 
-# initialize the model and optimizer (you'll want to use
-# binary_crossentropy for 2-class classification)
-print("[INFO] training network...")
+print("Training")
 opt = SGD(lr=INIT_LR, decay=INIT_LR / EPOCHS)
 model.compile(loss="categorical_crossentropy", optimizer=opt, metrics=["accuracy"])
 
@@ -129,7 +108,7 @@ plt.plot(N, H.history["loss"], label="train_loss")
 plt.plot(N, H.history["val_loss"], label="val_loss")
 plt.plot(N, H.history["acc"], label="train_acc")
 plt.plot(N, H.history["val_acc"], label="val_acc")
-plt.title("Training Loss and Accuracy (SmallVGGNet)")
+plt.title("Training Loss and Accuracy (ModelCNN)")
 plt.xlabel("Epoch #")
 plt.ylabel("Loss/Accuracy")
 plt.legend()
