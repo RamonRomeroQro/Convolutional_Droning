@@ -11,7 +11,8 @@ from keras.models import load_model
 import argparse
 import pickle
 import cv2
- 
+import subprocess
+
 # construct the argument parser and parse the arguments
 def predict2(filename, model, lb):
     
@@ -51,9 +52,6 @@ def predict2(filename, model, lb):
  
 def sketch_transform(image, model, lb):
     image_grayscale = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) # gray scale
-
-    
-
     image_grayscale_blurred = cv2.GaussianBlur(image_grayscale, (7,7), 0) # gaussian blur
     #image_canny = cv2.Canny(image_grayscale_blurred, 10, 80)
     _, mask = image_canny_inverted = cv2.threshold(image_grayscale, 50, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
@@ -87,7 +85,6 @@ def sketch_transform(image, model, lb):
     # cv2.imwrite( filename, thresh)
 
     final = cv2.bitwise_not(thresh)
-    
 
     label = predict2(final, model, lb)
     
@@ -95,44 +92,82 @@ def sketch_transform(image, model, lb):
 
     return final, label
     
-cam_capture = cv2.VideoCapture(0)
-cv2.destroyAllWindows()
-upper_left = (50, 50)
-bottom_right = (300, 300)
 
-print("[INFO] loading network and label binarizer...")
 
-model = load_model("output/cnn.model")
-lb = pickle.loads(open("output/cnn.pickle", "rb").read())
 
-while True:
-    _, image_frame = cam_capture.read()
+
+
+
+#import keyboard #Using module keyboard
+from pyparrot.Bebop import Bebop
+
+#bebop = Bebop(drone_type="Bebop2")
+print("CONNECTING...")
+#success = bebop.connect(10)
+#print(success)
+
+if (True):
+
+    # bebop.set_max_altitude(2)          
+    # bebop.set_max_tilt(10)               
+    # bebop.set_max_vertical_speed(0.5)  
+
+    cam_capture = cv2.VideoCapture(0)
+    cv2.destroyAllWindows()
+    upper_left = (50, 50)
+    bottom_right = (300, 300)
+    print("[INFO] loading network and label binarizer...")
+
+    model = load_model("output/cnn.model")
+    lb = pickle.loads(open("output/cnn.pickle", "rb").read())
+
     
-    #Rectangle marker
-    r = cv2.rectangle(image_frame, upper_left, bottom_right, (100, 50, 200), 5)
-    rect_img = image_frame[upper_left[1] : bottom_right[1], upper_left[0] : bottom_right[0]]
-    
-    sketcher_rect = rect_img
-    sketcher_rect, label = sketch_transform(sketcher_rect, model, lb)
-    
-    #Conversion for 3 channels to put back on original image (streaming)
-    sketcher_rect_rgb = cv2.cvtColor(sketcher_rect, cv2.COLOR_GRAY2RGB)
-    
-    #Replacing the sketched image on Region of Interest
-    image_frame[upper_left[1] : bottom_right[1], upper_left[0] : bottom_right[0]] = sketcher_rect_rgb
-    cv2.imshow("Sketcher ROI", image_frame)
-    #print(label)
+    while True:
+        _, image_frame = cam_capture.read()
+        
+        #Rectangle marker
+        r = cv2.rectangle(image_frame, upper_left, bottom_right, (100, 50, 200), 5)
+        rect_img = image_frame[upper_left[1] : bottom_right[1], upper_left[0] : bottom_right[0]]
+        
+        sketcher_rect = rect_img
+        sketcher_rect, label = sketch_transform(sketcher_rect, model, lb)
+        
+        #Conversion for 3 channels to put back on original image (streaming)
+        sketcher_rect_rgb = cv2.cvtColor(sketcher_rect, cv2.COLOR_GRAY2RGB)
+        
+        #Replacing the sketched image on Region of Interest
+        image_frame[upper_left[1] : bottom_right[1], upper_left[0] : bottom_right[0]] = sketcher_rect_rgb
+        cv2.imshow("Sketcher ROI", image_frame)
+        label = "12345"
+        #print(label)
 
-    # p = Popen(["python3", "scream.py"], stdout=PIPE, stdin=PIPE, stderr=PIPE)
-    # p.stdin.write(str(label).encode('utf-8'))
-    # p.stdin.flush()
-    # #p.stdin.close()
-    # p.wait()
-    
+        if label=="ok": 
+            print('taking off')
+            #bebop.safe_takeoff(10)
+        if label=="C": 
+            print('forward')
+            #bebop.fly_direct(0, 10, 0, 0, 0.1)
+        if label=="L": 
+            print('backward')
+            #bebop.fly_direct(0, -10, 0, 0, 0.1)
+        if label=="fist": 
+            print('left')
+            #bebop.fly_direct(-10, 0, 0, 0, 0.1)
+        if label=="okay": 
+            print('right')
+            #bebop.fly_direct(10, 0, 0, 0, 0.1)
+        if label=="palm": 
+            print('up')
+            #bebop.fly_direct(0, 0, 0,10, 0.1)
+        if label=="peace": 
+            print('up')
+            #bebop.fly_direct(0, 0, 0,10, 0.1)
+        # if keyboard.is_pressed('Esc'): 
+        #     break
 
-    #stdout_data = p.communicate(label.encode())[0]
-    if cv2.waitKey(1)& 0xFF == ord('s'):
-        break
-
-cam_capture.release()
-cv2.destroyAllWindows()
+    print("DONE - DISCONNECTING")
+    #print("Battery is %s" % bebop.sensors.battery)  #imprime el estado de la bateria
+    #bebop.disconnect()
+    cam_capture.release()
+    cv2.destroyAllWindows()
+        
