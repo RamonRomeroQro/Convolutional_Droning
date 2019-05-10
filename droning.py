@@ -94,6 +94,27 @@ def sketch_transform(image, model, lb):
 
 
     return final, label
+
+
+
+
+
+
+from pyparrot.Bebop import Bebop
+
+bebop = Bebop(drone_type="Bebop2")
+print("CONNECTING...")
+success = bebop.connect(10)
+print(success)
+if success:
+
+    # No cambiar los valores de las siguientes 3 configuraciones !!!!!!
+    bebop.set_max_altitude(2)           #Establece la altitud máxima en 3 metros
+    bebop.set_max_tilt(10)               #Establece la velocidad máxima de movimientos angulares en 5°
+    bebop.set_max_vertical_speed(0.5)   #Establece la velocidad máxima vertical en 0.5 m/s
+
+
+
     
 cam_capture = cv2.VideoCapture(0)
 cv2.destroyAllWindows()
@@ -121,7 +142,31 @@ while True:
     #Replacing the sketched image on Region of Interest
     image_frame[upper_left[1] : bottom_right[1], upper_left[0] : bottom_right[0]] = sketcher_rect_rgb
     cv2.imshow("Sketcher ROI", image_frame)
+    
     #print(label)
+
+    if label=="ok": 
+        print('taking off')
+        #bebop.safe_takeoff(10)
+    elif label=="C": 
+        print('forward')
+        #bebop.fly_direct(0, 10, 0, 0, 0.1)
+    elif label=="L": 
+        print('backward')
+        #bebop.fly_direct(0, -10, 0, 0, 0.1)
+    elif label=="fist": 
+        print('left')
+        #bebop.fly_direct(-10, 0, 0, 0, 0.1)
+    elif label=="okay": 
+        print('right')
+        #bebop.fly_direct(10, 0, 0, 0, 0.1)
+    elif label=="palm": 
+        print('up')
+        #bebop.fly_direct(0, 0, 0,10, 0.1)
+    elif label=="peace": 
+        print('up')
+        #bebop.fly_direct(0, 0, 0,10, 0.1)
+    
 
     # p = Popen(["python3", "scream.py"], stdout=PIPE, stdin=PIPE, stderr=PIPE)
     # p.stdin.write(str(label).encode('utf-8'))
