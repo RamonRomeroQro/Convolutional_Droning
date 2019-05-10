@@ -46,9 +46,13 @@ def predict2(filename, model, lb):
     label = lb.classes_[i]
 
     # draw the class label + probability on the output image
-    #print("{}: {:.2f}%".format(label, preds[0][i] * 100))
+    print("{}: {:.2f}%".format(label, preds[0][i] * 100))
     return label
  
+
+
+
+
 def sketch_transform(image, model, lb):
     image_grayscale = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) # gray scale
 
@@ -94,10 +98,7 @@ def sketch_transform(image, model, lb):
 
 
     return final, label
-
-
-
-
+    
 
 
 from pyparrot.Bebop import Bebop
@@ -114,8 +115,6 @@ if success:
     bebop.set_max_vertical_speed(0.5)   #Establece la velocidad máxima vertical en 0.5 m/s
 
 
-
-    
 cam_capture = cv2.VideoCapture(0)
 cv2.destroyAllWindows()
 upper_left = (50, 50)
@@ -125,59 +124,58 @@ print("[INFO] loading network and label binarizer...")
 
 model = load_model("output/cnn.model")
 lb = pickle.loads(open("output/cnn.pickle", "rb").read())
-
 while True:
-    _, image_frame = cam_capture.read()
-    
-    #Rectangle marker
-    r = cv2.rectangle(image_frame, upper_left, bottom_right, (100, 50, 200), 5)
-    rect_img = image_frame[upper_left[1] : bottom_right[1], upper_left[0] : bottom_right[0]]
-    
-    sketcher_rect = rect_img
-    sketcher_rect, label = sketch_transform(sketcher_rect, model, lb)
-    
-    #Conversion for 3 channels to put back on original image (streaming)
-    sketcher_rect_rgb = cv2.cvtColor(sketcher_rect, cv2.COLOR_GRAY2RGB)
-    
-    #Replacing the sketched image on Region of Interest
-    image_frame[upper_left[1] : bottom_right[1], upper_left[0] : bottom_right[0]] = sketcher_rect_rgb
-    cv2.imshow("Sketcher ROI", image_frame)
-    
-    #print(label)
+    explicit_label="XXX"
+    while True:
+        _, image_frame = cam_capture.read()
+        
+        #Rectangle marker
+        r = cv2.rectangle(image_frame, upper_left, bottom_right, (100, 50, 200), 5)
+        rect_img = image_frame[upper_left[1] : bottom_right[1], upper_left[0] : bottom_right[0]]
+        
+        sketcher_rect = rect_img
+        sketcher_rect, label = sketch_transform(sketcher_rect, model, lb)
+        
+        #Conversion for 3 channels to put back on original image (streaming)
+        sketcher_rect_rgb = cv2.cvtColor(sketcher_rect, cv2.COLOR_GRAY2RGB)
+        
+        #Replacing the sketched image on Region of Interest
+        image_frame[upper_left[1] : bottom_right[1], upper_left[0] : bottom_right[0]] = sketcher_rect_rgb
+        cv2.imshow("Sketcher ROI", image_frame)
+        print(label)
 
-    if label=="ok": 
-        print('taking off')
-        #bebop.safe_takeoff(10)
-    elif label=="C": 
+
+        if cv2.waitKey(1)& 0xFF == ord('s'):
+            explicit_label=label
+            break
+    
+   
+    if explicit_label=="C": 
         print('forward')
-        #bebop.fly_direct(0, 10, 0, 0, 0.1)
-    elif label=="L": 
+        bebop.fly_direct(0, 10, 0, 0, 0.1)
+    if explicit_label=="L": 
         print('backward')
-        #bebop.fly_direct(0, -10, 0, 0, 0.1)
-    elif label=="fist": 
-        print('left')
-        #bebop.fly_direct(-10, 0, 0, 0, 0.1)
-    elif label=="okay": 
-        print('right')
-        #bebop.fly_direct(10, 0, 0, 0, 0.1)
-    elif label=="palm": 
-        print('up')
-        #bebop.fly_direct(0, 0, 0,10, 0.1)
-    elif label=="peace": 
-        print('up')
-        #bebop.fly_direct(0, 0, 0,10, 0.1)
-    
+        bebop.fly_direct(0, -10, 0, 0, 0.1)
 
-    # p = Popen(["python3", "scream.py"], stdout=PIPE, stdin=PIPE, stderr=PIPE)
-    # p.stdin.write(str(label).encode('utf-8'))
-    # p.stdin.flush()
-    # #p.stdin.close()
-    # p.wait()
-    
+    ####
 
-    #stdout_data = p.communicate(label.encode())[0]
-    if cv2.waitKey(1)& 0xFF == ord('s'):
+    if explicit_label=="fist": 
+        print('aterrizar')
+        bebop.safe_land(10)
         break
+    if explicit_label=="okay": 
+        print('despegar')
+        bebop.safe_takeoff(10)
 
+    ####
+
+    if explicit_label=="palm": 
+        print('right')
+        bebop.fly_direct(10, 0, 0, 0, 0.1)
+    if explicit_label=="peace": 
+        print('yo')
+        bebop.fly_direct(0, 0, 10,0, 0.1)
+        
+bebop.disconnect()
 cam_capture.release()
 cv2.destroyAllWindows()
