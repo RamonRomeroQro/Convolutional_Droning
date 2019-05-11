@@ -1,10 +1,7 @@
 .DS_Store
 venv
 ./venv
-./hands
-hands
-./mytest
-mytest
+
 ./.vscode
 .vscode
 
