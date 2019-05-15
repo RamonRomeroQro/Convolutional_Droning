@@ -143,10 +143,16 @@ while True:
         image_frame[upper_left[1] : bottom_right[1], upper_left[0] : bottom_right[0]] = sketcher_rect_rgb
         cv2.imshow("Sketcher ROI", image_frame)
         print(label)
+        print("Battery is %s" % bebop.sensors.battery)  #imprime el estado de la bateria
+
 
 
         if cv2.waitKey(1)& 0xFF == ord('s'):
             explicit_label=label
+            break
+        
+        if cv2.waitKey(1)& 0xFF == ord('x'):
+            explicit_label="stop"
             break
     
    
@@ -174,8 +180,12 @@ while True:
         bebop.fly_direct(10, 0, 0, 0, 0.1)
     if explicit_label=="peace": 
         print('yo')
-        bebop.fly_direct(0, 0, 10,0, 0.1)
-        
+        bebop.fly_direct(0, 0, 10,0, 10)
+
+    if explicit_label=="stop": 
+        break
+
+
 bebop.disconnect()
 cam_capture.release()
 cv2.destroyAllWindows()
