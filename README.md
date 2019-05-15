@@ -2,6 +2,12 @@
 
 Convolutional Neural Network for drone controlling by hand gestures.
 
++ models on /outputs folder (generated weights and for CNN model)
++ dataset in /hands folder
+
+
+## Instructions
+
 For  windows use linux subsytem or any UNIX based OS
 
 (https://www.youtube.com/watch?v=cVe-OR5neuc) - Windows Subsystem Tutorial
