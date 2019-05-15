@@ -16,7 +16,7 @@ For  windows use linux subsytem or any UNIX based OS
 
 https://www.python.org/downloads/
 
-+ create a virtualevironment
++ create a virtual evironment
 ```
 $ python3 -m venv venv
 ```
