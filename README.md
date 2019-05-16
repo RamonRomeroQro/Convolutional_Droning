@@ -6,6 +6,9 @@ Convolutional Neural Network for drone controlling by hand gestures.
 + dataset in /hands folder
 
 
++ AVision_Reporte.pdf 
+
+
 ## Instructions
 
 For  windows use linux subsytem or any UNIX based OS
