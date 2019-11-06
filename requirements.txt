@@ -3,7 +3,7 @@ astor==0.8.0
 astroid==2.3.2
 certifi==2018.11.29
 cycler==0.10.0
-gast==0.2.2
+gast==0.3.2
 grpcio==1.24.3
 h5py==2.9.0
 ifaddr==0.1.6
