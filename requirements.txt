@@ -5,7 +5,7 @@ certifi==2018.11.29
 cycler==0.10.0
 gast==0.3.2
 grpcio==1.24.3
-h5py==2.9.0
+h5py==2.10.0
 ifaddr==0.1.6
 isort==4.3.21
 Keras==2.3.1
